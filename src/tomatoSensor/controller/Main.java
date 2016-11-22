@@ -7,10 +7,12 @@ package tomatoSensor.controller;
 
 import java.io.IOException;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  *
@@ -26,8 +28,13 @@ public class Main extends Application {
         MainFrameController mainFrameController = loader.getController();
         mainFrameController.setMainStage(stage);
         stage.setScene(scene);
+        stage.setTitle("シリアル通信は確立していません - SapFlow");
+        //終了時にシリアル通信を切る
+        if(mainFrameController.getSerialIO().isSerialOpened()) {
+            stage.setOnCloseRequest(windowEvent -> {mainFrameController.getSerialIO().closeSerialPort();});
+        }
         stage.show();
-    }
+   }
 
     /**
      * @param args the command line arguments
@@ -35,5 +42,4 @@ public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
 }
