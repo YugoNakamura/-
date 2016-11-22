@@ -7,7 +7,6 @@ package tomatoSensor.controller;
 
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +14,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.TooManyListenersException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
