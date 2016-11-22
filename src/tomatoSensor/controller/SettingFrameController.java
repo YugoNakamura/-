@@ -8,7 +8,10 @@ package tomatoSensor.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Properties;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -22,6 +25,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javax.mail.MessagingException;
 import tomatoSensor.mail.MailSender;
+import tomatoSensor.serial.SerialIO;
 
 /**
  *
@@ -34,12 +38,12 @@ public class SettingFrameController implements Initializable {
 
     //一般設定タブ
     @FXML
-    private ChoiceBox<String> comportChoiceBox;
+    private ChoiceBox<String> COMPortChoiceBox;
     @FXML
     private TextField saveDirPath;
     @FXML
     private CheckBox sensorCombo1, sensorCombo2, sensorCombo3, sensorCombo4, sensorCombo5, sensorCombo6;
-    boolean selectedSensor[] = new boolean[SENSOR_PORT_LENGTH];
+    private boolean selectedSensor[] = new boolean[SENSOR_PORT_LENGTH];
 
     //メール設定タブ
     @FXML
@@ -51,18 +55,21 @@ public class SettingFrameController implements Initializable {
     private PasswordField userPasswordTextField;
 
     private File selectedDir;
-
+    private SerialIO serialIO;
     private MailSender mailSender;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        ArrayList<String> comportList;
+        serialIO = new SerialIO();
         this.mailSender = new MailSender();
         this.selectedDir = new File("logData/");
         saveDirPath.setText(selectedDir.getAbsolutePath());
-        for(int i=0;i<selectedSensor.length;i++) {
+        for (int i = 0; i < selectedSensor.length; i++) {
             selectedSensor[i] = true;
         }
-        
+        comportList = serialIO.getSetialPortList();
+        COMPortChoiceBox.setItems(FXCollections.observableArrayList(comportList));
     }
 
     @FXML
@@ -96,10 +103,10 @@ public class SettingFrameController implements Initializable {
     //保存ボタンが押された時の動作
     @FXML
     private void submit(ActionEvent event) {
-        String selectedComPort = comportChoiceBox.getValue();
+        String selectedComPort = COMPortChoiceBox.getValue();
         String logDataPath = saveDirPath.getText();
 
-        //メールの送信設定
+        //メールサービスを利用するなら保存する。
         if (alertMailSetting.isSelected() || regularlyMailSetting.isSelected()) {
             try {
                 mailSender.setFrom(senderAddressTextField.getText());
@@ -122,6 +129,10 @@ public class SettingFrameController implements Initializable {
         selectedSensor[4] = sensorCombo5.isSelected();
         selectedSensor[5] = sensorCombo6.isSelected();
 
+        //設定をファイルに保存する
+        Properties generalSetting = new Properties();
+        generalSetting.setProperty("logFilePath", logDataPath);
+        generalSetting.setProperty("sensorPort", selectedSensor.toString());
         //設定ウィンドウを閉じる
         ((Node) event.getSource()).getScene().getWindow().hide();
     }
@@ -137,5 +148,9 @@ public class SettingFrameController implements Initializable {
 
     public boolean[] getSelectedSensor() {
         return selectedSensor;
+    }
+    
+    public String getSelectedCOMPort() {
+        return COMPortChoiceBox.getSelectionModel().selectedItemProperty().getValue();
     }
 }

@@ -9,8 +9,6 @@ import gnu.io.CommPortIdentifier;
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -19,19 +17,16 @@ import java.util.Enumeration;
  *
  * @author NakamuraYugo
  */
-public class SerialIO implements SerialPortEventListener {
+public class SerialIO  {
 
-    SerialPort serialPort;
-    CommPortIdentifier portID;
-
-    public static void main(String[] args) {
-        System.out.println(System.getProperty("java.library.path"));
-        SerialIO test = new SerialIO();
-        test.getSetialPortList();
-    }
-
+    private SerialPort serialPort;
+    private CommPortIdentifier portID;
+    private boolean serialOpened;
+    
     /**
      * 利用できるシリアルポートの一覧を取得する
+     *
+     * @return
      */
     public ArrayList<String> getSetialPortList() {
         ArrayList<String> portList = new ArrayList<>();
@@ -49,45 +44,35 @@ public class SerialIO implements SerialPortEventListener {
     }
 
     /**
-     * 特定のシリアルポートを開く
-     * ボーレート：9600
-     * データビット：8
-     * ストップビット：1
-     * パリティ：イーブン
-     * フロー制御：無し
+     * 特定のシリアルポートを開く ボーレート：9600 データビット：8 ストップビット：1 パリティ：イーブン フロー制御：無し
      */
-    public boolean openSerialPort(String portName) {
-        int timeOut = 2000;
-        int baudRate = 9600;
-        try {
-            portID = CommPortIdentifier.getPortIdentifier(portName);
-            //シリアルポートをopenするとき、文字列を与えて、競合が起こった時に対応できるようにする。同時にタイムアウトを定めて置く。[msec]
-            serialPort = (SerialPort)portID.open(getClass().getSimpleName(), timeOut);
-            //ボーレート・データビット数などを設定する。
-            serialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_EVEN);
-            //フロー制御の設定
-            serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
-        } catch (NoSuchPortException e) {
-            e.printStackTrace();
-            return false;
-        } catch (PortInUseException e) {
-            e.printStackTrace();
-            return false;
-        } catch (UnsupportedCommOperationException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
+    public void openSerialPort(String portName) throws NoSuchPortException, PortInUseException, UnsupportedCommOperationException {
+        final int TIME_OUT = 2000;
+        final int BAUDRATE = 9600;
+        portID = CommPortIdentifier.getPortIdentifier(portName);
+        //シリアルポートをopenするとき、文字列を与えて、競合が起こった時に対応できるようにする。同時にタイムアウトを定めて置く。[msec]
+        serialPort = (SerialPort) portID.open(getClass().getSimpleName(), TIME_OUT);
+        //ボーレート・データビット数などを設定する。
+        serialPort.setSerialPortParams(BAUDRATE, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_EVEN);
+        //フロー制御はしない
+        serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
+        serialOpened=true;
     }
+
     public void closeSerialPort() {
         serialPort.close();
+        serialOpened=false;
+    }
+    
+    public SerialPort getSerialPort() {
+        return serialPort;
     }
 
-    /**
-     * シリアルデータを受信した時のイベント
-     */
-    @Override
-    public void serialEvent(SerialPortEvent setialEvent) {
+    public CommPortIdentifier getPortID() {
+        return portID;
+    }
 
+    public boolean isSerialOpened() {
+        return serialOpened;
     }
 }

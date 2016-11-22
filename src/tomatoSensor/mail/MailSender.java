@@ -5,6 +5,7 @@
  */
 package tomatoSensor.mail;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
@@ -26,12 +27,12 @@ public class MailSender {
 
     private String from, userName, password, smtp, to, msg, subject;
 
-    private int port=-1;
+    private int port = -1;
 
     public MailSender() {
-        
+
     }
-    
+
     public void sendMail() throws MessagingException {
         Properties prop = new Properties();
         prop.put("mail.smtp.host", smtp);
@@ -49,7 +50,7 @@ public class MailSender {
         Transport.send(mail);
     }
 
-    public void saveSetting() throws IOException{
+    public void saveSetting() throws IOException {
         Properties settingpProperty = new Properties();
         settingpProperty.setProperty("sender", from);
         settingpProperty.setProperty("receiver", to);
@@ -58,6 +59,21 @@ public class MailSender {
         settingpProperty.setProperty("userName", userName);
         settingpProperty.setProperty("userPassword", password);
         settingpProperty.store(new FileWriter("./settingData/mailSetting.properties"), "");
+    }
+
+    public void loadsSetting() {
+        Properties settingProperties = new Properties();
+        try {
+            settingProperties.load(new FileReader("./settingData/mailSetting.properties"));
+        } catch (IOException e) {
+            
+        }
+        from = settingProperties.getProperty("sender");
+        to = settingProperties.getProperty("receiver");
+        smtp = settingProperties.getProperty("SMTPServerAdderss");
+        port = Integer.parseInt(settingProperties.getProperty("SMTPServerPort"));
+        userName = settingProperties.getProperty("userName");
+        password = settingProperties.getProperty("userPassword");
     }
 
     public void setFrom(String from) {
@@ -91,7 +107,7 @@ public class MailSender {
     public void setPort(int port) {
         this.port = port;
     }
-    
+
 }
 
 class MyAuth extends Authenticator {
